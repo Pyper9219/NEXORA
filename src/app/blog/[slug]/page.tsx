@@ -28,15 +28,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post) {
     return (
-      <main className="flex-1 pt-20">
+      <main className="page-main">
         <Navbar />
-        <section className="py-24 bg-gray-950">
-          <div className="max-w-7xl mx-auto px-6">
-            <h1 className="text-4xl font-display font-bold text-violet-400 mb-6">Post Not Found</h1>
-            <p className="text-white/60">
+        <section className="section-py bg-gray-950">
+          <div className="section-container">
+            <h1 className="hero-heading text-2xl sm:text-3xl lg:text-4xl text-violet-400 mb-6">Post Not Found</h1>
+            <p className="hero-subheading text-white/60">
               The blog post "{slug}" could not be found.
             </p>
-            <a href="/resources" className="text-violet-400 hover:text-white transition-colors">
+            <a href="/resources" className="btn-primary mt-6 inline-flex">
               Browse All Posts →
             </a>
           </div>
@@ -46,50 +46,48 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <main className="flex-1 pt-20">
+    <main className="page-main">
       <Navbar />
 
-      <section className="py-24 bg-gray-950">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="text-violet-400 text-sm font-medium uppercase tracking-wider mb-4">
-                Blog
-              </p>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-tight mb-6">
+      <section className="section-py bg-gray-950">
+        <div className="section-container">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+            <div className="space-responsive-y">
+              <p className="section-subheading text-violet-400">Blog</p>
+              <h1 className="hero-heading text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
                 {post.title}
               </h1>
-              <p className="text-white/60 text-lg leading-relaxed mb-8">
+              <p className="hero-subheading text-white/60">
                 {post.excerpt}
               </p>
               <div className="text-white/50 text-sm mb-8">
                 <time>{post.date}</time>
               </div>
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
-              <div className="mt-12 pt-12 border-t border-violet-500/20">
-                <h3 className="text-xl font-display font-medium text-violet-400 mb-4">Related Posts</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+              <div className="mt-10 lg:mt-12 pt-8 border-t border-violet-500/20">
+                <h3 className="text-lg sm:text-xl font-display font-medium text-violet-400 mb-4">Related Posts</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Related posts would be fetched dynamically in a real CMS integration */}
                 </div>
               </div>
             </div>
-            <aside className="relative">
+            <aside className="relative hidden lg:block">
               <div className="absolute -inset-2 bg-gradient-to-br from-violet-500/20 to-indigo-500/20 rounded-4xl opacity-70 blur-xl"></div>
-              <div className="relative pt-20">
-                <div className="bg-gray-900/80 rounded-2xl p-8 max-w-md">
-                  <h3 className="text-2xl font-display font-bold mb-4">Latest from Nexora</h3>
+              <div className="relative pt-12 lg:pt-20">
+                <div className="card-responsive bg-gray-900/80 rounded-2xl max-w-md mx-auto lg:mx-0 sticky top-24">
+                  <h3 className="text-lg sm:text-xl font-display font-bold mb-4">Latest from Nexora</h3>
                   <ul className="space-y-3 text-white/60">
                     <li>
                       <p className="font-medium">AI Automation Trends 2026</p>
-                      <p className="text-xs opacity-60">Jan 15, 2026</p>
+                      <p className="text-xs sm:text-sm opacity-60">Jan 15, 2026</p>
                     </li>
                     <li>
                       <p className="font-medium">Predictive Analytics Guide</p>
-                      <p className="text-xs opacity-60">Jan 10, 2026</p>
+                      <p className="text-xs sm:text-sm opacity-60">Jan 10, 2026</p>
                     </li>
                     <li>
                       <p className="font-medium">Multi-Channel Marketing</p>
-                      <p className="text-xs opacity-60">Jan 5, 2026</p>
+                      <p className="text-xs sm:text-sm opacity-60">Jan 5, 2026</p>
                     </li>
                   </ul>
                 </div>

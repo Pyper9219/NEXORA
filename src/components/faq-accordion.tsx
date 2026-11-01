@@ -50,13 +50,11 @@ export function FaqAccordion() {
   }
 
   return (
-    <section className="py-24 bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-violet-400 text-sm font-medium uppercase tracking-wider mb-4">
-            Frequently Asked Questions
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-display font-bold leading-tight">
+    <section className="section-py bg-gray-950">
+      <div className="section-container">
+        <div className="text-center mb-10 lg:mb-12 space-responsive-y">
+          <p className="section-subheading text-violet-400">Frequently Asked Questions</p>
+          <h2 className="section-heading text-3xl sm:text-4xl lg:text-5xl">
             Get The Answers You Need
           </h2>
         </div>
@@ -65,35 +63,31 @@ export function FaqAccordion() {
           {faqs.map((faq, index) => (
             <div
               key={faq.id}
-              className="bg-gray-900/50 rounded-xl border border-white/10 hover:border-violet-500/30 transition-all overflow-hidden"
+              className="card-responsive-sm bg-gray-900/50 rounded-xl border border-white/10 hover:border-violet-500/30 transition-all overflow-hidden"
             >
               <button
                 onClick={() => toggleFaq(index)}
-                className="w-full flex items-center justify-between p-6 text-left"
+                className="w-full flex items-center justify-between p-4 sm:p-6 text-left touch-target focus-visible-ring"
                 aria-expanded={openIndex === index}
               >
                 <div className="flex-1 pr-4">
-                  <h3 className="text-lg font-display font-medium text-white">
+                  <h3 className="text-base sm:text-lg font-display font-medium text-white">
                     {faq.question}
                   </h3>
                   {openIndex === null && (
-                    <p className="text-white/40 text-sm mt-1">
+                    <p className="text-white/40 text-xs sm:text-sm mt-1">
                       {faq.answer.substring(0, 100)}...
                     </p>
                   )}
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-violet-400 transition-transform duration-300 flex-shrink-0 ${
-                    openIndex === index ? "rotate-180" : ""
-                  }`}
+                  className={"w-5 h-5 text-violet-400 transition-transform duration-300 flex-shrink-0 " + (openIndex === index ? "rotate-180" : "")}
                 />
               </button>
               <div
-                className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                }`}
+                className={"overflow-hidden transition-all duration-300 " + (openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0")}
               >
-                <div className="px-6 pb-6">
+                <div className="px-4 sm:px-6 pb-6">
                   <p className="text-white/50 text-sm leading-relaxed">{faq.answer}</p>
                 </div>
               </div>

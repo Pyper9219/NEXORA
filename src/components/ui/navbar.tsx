@@ -31,24 +31,24 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/90 backdrop-blur-xl border-b border-white/10 transition-colors">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto container-responsive h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 7v6l4 2-4 2v6h-8v-6l4-2-4-2v-6h8zm0-4c2.21 0 4 1.79 4 4v12c0 2.21-1.79 4-4 4H5c-2.21 0-4-1.79-4-4V7c0-2.21 1.79-4 4-4h14z"/>
             </svg>
           </div>
-          <span className="text-xl font-display font-bold text-white">Nexora</span>
+          <span className="text-xl sm:text-2xl font-display font-bold text-white truncate">Nexora</span>
         </div>
 
         {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6 lg:gap-8">
           {navItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors"
+              className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors whitespace-nowrap"
             >
               {item.label}
             </Link>
@@ -60,21 +60,21 @@ export function Navbar() {
             <>
               <Link
                 href="/dashboard"
-                className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors"
+                className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors whitespace-nowrap"
               >
                 Dashboard
               </Link>
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded text-sm font-medium hover:bg-violet-500 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded text-sm font-medium hover:bg-violet-500 transition-colors focus-visible-ring"
                 >
-                  <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-medium text-sm">
                       {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4 flex-shrink-0" />
                 </button>
                 
                 {isUserMenuOpen && (
@@ -129,13 +129,13 @@ export function Navbar() {
             <div className="flex items-center gap-3">
               <Link
                 href="/auth/signin"
-                className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors"
+                className="text-white/70 text-sm font-medium hover:text-violet-400 transition-colors whitespace-nowrap"
               >
                 Sign In
               </Link>
               <Link
                 href="/auth/signup"
-                className="bg-violet-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-violet-500 transition-colors"
+                className="btn-primary px-4 py-2 text-sm"
               >
                 Get Started
               </Link>
@@ -144,12 +144,13 @@ export function Navbar() {
         </div>
 
         {/* Mobile Nav & CTA Buttons */}
-        <div className="md:hidden flex items-center gap-4">
+        <div className="lg:hidden flex items-center gap-3">
           {/* Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors"
+            className="p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors touch-target focus-visible-ring"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <X className="w-6 h-6 text-white"/> : <Menu className="w-6 h-6 text-white"/>}
           </button>
@@ -159,14 +160,15 @@ export function Navbar() {
             <div className="flex gap-2">
               <Link
                 href="/dashboard"
-                className="bg-violet-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-violet-500 transition-colors"
+                className="btn-primary px-4 py-2 text-sm touch-target"
               >
                 Dashboard
               </Link>
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors"
+                className="p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors touch-target focus-visible-ring"
                 aria-label="User menu"
+                aria-expanded={isUserMenuOpen}
               >
                 <User className="w-6 h-6 text-white"/>
               </button>
@@ -175,13 +177,13 @@ export function Navbar() {
             <div className="flex gap-2">
               <Link
                 href="/auth/signin"
-                className="border-2 border-white/20 text-white px-4 py-2 rounded text-sm font-medium hover:border-violet-400 transition-colors"
+                className="btn-secondary px-4 py-2 text-sm touch-target"
               >
                 Sign In
               </Link>
               <Link
                 href="/auth/signup"
-                className="bg-violet-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-violet-500 transition-colors"
+                className="btn-primary px-4 py-2 text-sm touch-target"
               >
                 Get Started
               </Link>
@@ -194,75 +196,77 @@ export function Navbar() {
 
       {/* Mobile Menu (hidden by default) */}
       <div
-        className={`fixed inset-0 z-40 bg-gray-950/95 backdrop-blur-xl transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-0 z-40 bg-gray-950/95 backdrop-blur-xl transition-transform duration-300 ease-in-out lg:hidden ${
           isMenuOpen ? "left-0" : "-left-full"
         }`}
         aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        role="dialog"
+        aria-modal="true"
       >
-        <div className="flex flex-col h-screen p-8 pt-20">
+        <div className="flex flex-col h-screen p-6 pt-24 overflow-y-auto">
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="absolute top-6 right-6 p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded bg-white/10 hover:bg-violet-500/20 transition-colors touch-target focus-visible-ring"
             aria-label="Close menu"
           >
             <X className="w-6 h-6 text-white"/>
           </button>
 
-          <nav className="flex-1 flex flex-col gap-6">
+          <nav className="flex-1 flex flex-col gap-4">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="text-white text-lg font-medium hover:text-violet-400 transition-colors"
+                className="text-white text-lg font-medium hover:text-violet-400 transition-colors px-4 py-3 rounded-lg hover:bg-violet-500/10 touch-target"
               >
                 {item.label}
               </Link>
             ))}
             
             {status !== "loading" && session?.user ? (
-              <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
                 <Link
                   href="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
-                  className="bg-violet-600 text-white px-6 py-3 rounded text-lg font-medium hover:bg-violet-500 transition-colors text-center"
+                  className="btn-primary w-full text-center touch-target"
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/dashboard/billing"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full border-2 border-violet-400 text-violet-400 px-6 py-3 rounded text-lg font-medium hover:bg-violet-600/20 transition-colors text-center"
+                  className="btn-outline w-full text-center touch-target"
                 >
                   Billing
                 </Link>
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full border-2 border-white/20 text-white/70 px-6 py-3 rounded text-lg font-medium hover:border-violet-400 hover:text-violet-400 transition-colors text-center"
+                  className="btn-secondary w-full text-center touch-target"
                 >
                   Settings
                 </Link>
                 <button
                   onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
-                  className="w-full text-red-400 px-6 py-3 rounded text-lg font-medium hover:bg-red-500/10 transition-colors text-center"
+                  className="w-full text-red-400 px-6 py-3 rounded text-lg font-medium hover:bg-red-500/10 transition-colors touch-target focus-visible-ring"
                 >
                   Sign Out
                 </button>
               </div>
             ) : status !== "loading" ? (
-              <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
                 <Link
                   href="/auth/signin"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full border-2 border-white/20 text-white px-6 py-3 rounded text-lg font-medium hover:border-violet-400 hover:text-violet-400 transition-colors text-center"
+                  className="btn-secondary w-full text-center touch-target"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/signup"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full bg-violet-600 text-white px-6 py-3 rounded text-lg font-medium hover:bg-violet-500 transition-colors text-center"
+                  className="btn-primary w-full text-center touch-target"
                 >
                   Get Started
                 </Link>

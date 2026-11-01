@@ -31,6 +31,8 @@ body {
   background: #030712;
   color: #f9fafb;
   font-family: 'Inter', Arial, Helvetica, sans-serif;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
 }
 
 * {
@@ -40,4 +42,238 @@ body {
 button,
 a {
   transition: all 0.2s ease;
+}
+
+/* Responsive text utilities */
+@layer utilities {
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  .text-responsive-3xl {
+    @apply text-3xl sm:text-4xl lg:text-5xl;
+  }
+  .text-responsive-4xl {
+    @apply text-4xl sm:text-5xl lg:text-6xl;
+  }
+  .text-responsive-5xl {
+    @apply text-5xl sm:text-6xl lg:text-7xl;
+  }
+
+  /* Responsive spacing */
+  .space-responsive-y > * + * {
+    @apply mt-4 sm:mt-6 lg:mt-8;
+  }
+
+  .gap-responsive {
+    @apply gap-4 sm:gap-6 lg:gap-8;
+  }
+
+  .gap-responsive-sm {
+    @apply gap-2 sm:gap-3 lg:gap-4;
+  }
+
+  /* Container responsive padding */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section responsive padding */
+  .section-py {
+    @apply py-12 sm:py-16 lg:py-24;
+  }
+
+  .section-py-sm {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+
+  /* Grid responsive columns */
+  .grid-responsive-1-2-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-responsive-1-2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+
+  .grid-responsive-1-2-4 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  /* Flex responsive */
+  .flex-responsive-col {
+    @apply flex-col sm:flex-row;
+  }
+
+  .flex-responsive-col-reverse {
+    @apply flex-col-reverse sm:flex-row;
+  }
+
+  /* Button responsive */
+  .btn-responsive {
+    @apply px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-sm sm:text-base lg:text-lg;
+  }
+
+  .btn-responsive-sm {
+    @apply px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm;
+  }
+
+  /* Input responsive */
+  .input-responsive {
+    @apply px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base;
+  }
+
+  /* Card responsive padding */
+  .card-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .card-responsive-sm {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+
+  /* Hero section responsive */
+  .hero-heading {
+    @apply text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight;
+  }
+
+  .hero-subheading {
+    @apply text-base sm:text-lg lg:text-xl leading-relaxed;
+  }
+
+  /* Section heading responsive */
+  .section-heading {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-display font-bold leading-tight;
+  }
+
+  .section-subheading {
+    @apply text-sm sm:text-base uppercase tracking-wider font-medium;
+  }
+
+  /* Prevent text overflow */
+  .text-ellipsis {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* Touch-friendly targets */
+  @media (max-width: 768px) {
+    .touch-target {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+
+  /* Mobile-first responsive images */
+  .img-responsive {
+    @apply w-full h-auto;
+  }
+
+  /* Scrollbar hiding for mobile */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Focus visible for accessibility */
+  .focus-visible-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950;
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+}
+
+/* Form element responsive improvements */
+@layer components {
+  .form-input {
+    @apply w-full bg-gray-900 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-50 input-responsive;
+  }
+
+  .form-textarea {
+    @apply form-input resize-none min-h-[120px];
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-white/80 mb-2;
+  }
+
+  .form-error {
+    @apply text-red-400 text-sm mt-1;
+  }
+
+  .btn-primary {
+    @apply bg-violet-600 text-white rounded-full font-medium hover:bg-violet-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible-ring btn-responsive;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-white/20 text-white rounded-full font-medium hover:border-violet-400 transition-colors focus-visible-ring btn-responsive;
+  }
+
+  .btn-outline {
+    @apply border-2 border-violet-400 text-violet-400 rounded-full font-medium hover:bg-violet-600/20 transition-colors focus-visible-ring btn-responsive;
+  }
+
+  .btn-ghost {
+    @apply text-white/70 hover:text-violet-400 transition-colors focus-visible-ring px-3 py-2 text-sm;
+  }
+}
+
+/* Layout utilities */
+@layer components {
+  .page-container {
+    @apply min-h-screen flex flex-col;
+  }
+
+  .page-main {
+    @apply flex-1 pt-20;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto container-responsive;
+  }
+
+  .content-grid {
+    @apply grid gap-responsive grid-responsive-1-2-3;
+  }
+
+  .content-grid-1-2 {
+    @apply grid gap-responsive grid-responsive-1-2;
+  }
+
+  .content-grid-1-2-4 {
+    @apply grid gap-responsive grid-responsive-1-2-4;
+  }
 }

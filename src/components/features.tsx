@@ -2,21 +2,19 @@ import { Shield, Zap, TrendingUp, Users, Mail, Globe, Laptop, BarChart2 } from '
 
 export default function FeaturesGrid() {
   return (
-    <section className="py-24 bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-violet-400 text-sm font-medium uppercase tracking-wider mb-4">
-            Intelligent Features
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-display font-bold leading-tight">
+    <section className="section-py bg-gray-950">
+      <div className="section-container">
+        <div className="text-center mb-12 lg:mb-16 space-responsive-y">
+          <p className="section-subheading text-violet-400">Intelligent Features</p>
+          <h2 className="section-heading text-3xl sm:text-4xl lg:text-5xl">
             Powerful Tools for
             <span className="text-violet-400">Every</span> Business
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="content-grid">
           {/* Feature Card 1 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <Zap className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">AI Automation</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -25,7 +23,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 2 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <BarChart2 className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Predictive Analytics</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -34,7 +32,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 3 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <TrendingUp className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Multi-Channel</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -43,7 +41,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 4 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <Users className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Team Collaboration</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -52,7 +50,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 5 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <Shield className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Enterprise Security</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -61,7 +59,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 6 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <Laptop className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Custom Integrations</h3>
             <p className="text-white/60 text-sm leading-relaxed">
@@ -70,7 +68,7 @@ export default function FeaturesGrid() {
           </div>
 
           {/* Feature Card 7 */}
-          <div className="bg-gray-900/50 rounded-3xl p-6 transition-all hover:bg-gray-900/80 border border-white/10 hover:border-violet-500/30 group">
+          <div className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group">
             <Mail className="w-8 h-8 text-violet-400 group-hover:text-violet-300 transition-colors mb-4"/>
             <h3 className="text-xl font-display font-bold mb-2">Email Marketing</h3>
             <p className="text-white/60 text-sm leading-relaxed">

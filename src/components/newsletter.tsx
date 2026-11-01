@@ -37,7 +37,7 @@ export function NewsletterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="flex flex-responsive-col gap-3 max-w-md mx-auto w-full">
       <label htmlFor="newsletter-email" className="sr-only">
         Email address
       </label>
@@ -50,12 +50,12 @@ export function NewsletterForm() {
         placeholder="Enter your email"
         required
         disabled={status === "loading" || status === "success"}
-        className="flex-1 bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50"
+        className="form-input flex-1"
       />
       <button
         type="submit"
         disabled={status === "loading" || status === "success"}
-        className="bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="btn-primary w-full sm:w-auto touch-target"
       >
         {status === "loading" && <Loader2 className="w-5 h-5 animate-spin" />}
         {status === "success" && <Check className="w-5 h-5" />}
@@ -68,7 +68,7 @@ export function NewsletterForm() {
       </button>
       
       {message && (
-        <p className={`text-sm text-center sm:text-left ${
+        <p className={`text-sm text-center sm:text-left w-full ${
           status === "success" ? "text-green-400" : "text-red-400"
         }`} role="alert">
           {message}

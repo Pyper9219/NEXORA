@@ -42,45 +42,43 @@ export function PricingPreview() {
   }
 
   return (
-    <section className="py-24 bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-violet-400 text-sm font-medium uppercase tracking-wider mb-4">
-            pricing
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-display font-bold leading-tight">
+    <section className="section-py bg-gray-950">
+      <div className="section-container">
+        <div className="text-center mb-10 lg:mb-12 space-responsive-y">
+          <p className="section-subheading text-violet-400">Pricing</p>
+          <h2 className="section-heading text-3xl sm:text-4xl lg:text-5xl">
             Choose Your Plan
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="content-grid">
           {PRICING.map((plan) => (
             <div
               key={plan.id}
-              className="bg-gray-900/50 rounded-3xl p-6 border border-white/10 hover:border-violet-500/30 transition-all group"
+              className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-xl font-display font-bold">{plan.name}</h3>
-                  <p className="text-violet-400 text-3xl font-bold">{plan.price}/mo</p>
+                  <p className="text-violet-400 text-2xl sm:text-3xl font-bold">{plan.price}/mo</p>
                 </div>
-                <span className="text-white/50 text-xs">{plan.interval === 'year' ? 'Annual' : 'Monthly'}</span>
+                <span className="text-white/50 text-xs sm:text-sm">{plan.interval === 'year' ? 'Annual' : 'Monthly'}</span>
               </div>
 
               <ul className="space-y-2 mb-6">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start text-white/60">
+                  <li key={feature} className="flex items-start text-white/60 text-sm">
                     <span className="w-4 h-4 rounded bg-violet-500 flex-shrink-0 mt-1"/>
                     <span className="pl-3">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="flex gap-3 mb-6">
+              <div className="flex flex-responsive-col gap-3 mb-6">
                 <button
                   onClick={() => handleStartTrial(plan.id)}
                   disabled={loadingPlan === plan.id}
-                  className="flex-1 bg-violet-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-violet-500 transition-colors disabled:opacity-50"
+                  className="btn-primary w-full touch-target"
                 >
                   {loadingPlan === plan.id ? (
                     <>
@@ -93,7 +91,7 @@ export function PricingPreview() {
                 </button>
                 <button
                   onClick={() => window.location.href = "/contact"}
-                  className="flex-1 border-2 border-violet-400 text-violet-400 px-4 py-2 rounded text-sm font-medium hover:bg-violet-600/20 transition-colors"
+                  className="btn-outline w-full touch-target"
                 >
                   Contact Sales
                 </button>

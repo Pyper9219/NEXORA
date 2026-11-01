@@ -96,32 +96,30 @@ export const industries = [
 
 export function IndustryCards() {
   return (
-    <section className="py-24 bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-violet-400 text-sm font-medium uppercase tracking-wider mb-4">
-            Industry Solutions
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-display font-bold leading-tight">
+    <section className="section-py bg-gray-950">
+      <div className="section-container">
+        <div className="text-center mb-12 lg:mb-16 space-responsive-y">
+          <p className="section-subheading text-violet-400">Industry Solutions</p>
+          <h2 className="section-heading text-3xl sm:text-4xl lg:text-5xl">
             AI-Powered Growth for
             <span className="text-violet-400">Your</span> Industry
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="content-grid">
           {industries.map((industry) => (
             <div
               key={industry.id}
-              className="bg-gray-900/50 rounded-3xl p-6 border border-white/10 hover:border-violet-500/30 transition-all group"
+              className="card-responsive bg-gray-900/50 rounded-3xl border border-white/10 hover:border-violet-500/30 transition-all group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  {industry.icon}
-                  <h3 className="text-xl font-display font-bold">{industry.name}</h3>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="flex-shrink-0">{industry.icon}</span>
+                  <h3 className="text-xl font-display font-bold truncate">{industry.name}</h3>
                 </div>
                 <Link
                   href="/pricing"
-                  className="text-violet-400 text-sm font-medium hover:text-violet-300 transition-colors"
+                  className="text-violet-400 text-sm font-medium hover:text-violet-300 transition-colors whitespace-nowrap flex-shrink-0"
                 >
                   Learn More
                 </Link>
@@ -131,8 +129,8 @@ export function IndustryCards() {
                 {industry.problem}
               </p>
 
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-violet-400 text-sm">Solution:</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+                <span className="text-violet-400 text-sm font-medium flex-shrink-0">Solution:</span>
                 <span className="text-white/60 text-sm">{industry.solution}</span>
               </div>
 
@@ -142,7 +140,7 @@ export function IndustryCards() {
 
               <Link
                 href="/pricing"
-                className="bg-violet-600/20 text-violet-400 px-4 py-2 rounded text-sm font-medium hover:bg-violet-600/30 transition-colors"
+                className="btn-outline w-full sm:w-auto text-center"
               >
                 {industry.cta}
               </Link>
