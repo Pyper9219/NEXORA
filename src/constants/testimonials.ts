@@ -1,0 +1,40 @@
+export const TESTIMONIALS = [
+  {
+    id: '1',
+    name: 'Sarah Johnson',
+    title: 'CEO, GrowthScale SaaS',
+    company: 'GrowthScale',
+    rating: 5,
+    text: 'Nexora transformed our onboarding process. From 15% to 47% trial-to-paid conversion in just 30 days. The AI automation saved us 20 hours per week.',
+  },
+  {
+    id: '2',
+    name: 'Michael Chen',
+    title: 'Founder, Shopify Store',
+    company: 'Urban Threads',
+    rating: 5,
+    text: 'The cart recovery sequences alone brought back $42K in lost revenue. Worth every penny - the best investment we made this year.',
+  },
+  {
+    id: '3',
+    name: 'Dr. Robert Kim',
+    title: 'Medical Director, HealthPlus',
+    company: 'HealthPlus Clinics',
+    text: 'Automated appointment reminders cut our no-show rate from 23% to just 9%. Our staff can now focus on patient care instead of admin work.',
+  },
+  {
+    id: '4',
+    name: 'Aisha Patel',
+    title: 'Operations Lead, Nova Logistics',
+    company: 'Nova Logistics',
+    rating: 4,
+    text: 'Route optimization reduced our fuel costs by 28%. The API integration was seamless and the support team is responsive.',
+  },
+  {
+    id: '5',
+    name: 'David Morrison',
+    title: 'Marketing Director, Scale & Grow Agency',
+    company: 'Scale & Grow',
+    text: 'Automated client reporting cut our agency workload by 80%. We can now take on 3x more clients without hiring more staff.',
+  },
+]

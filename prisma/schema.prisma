@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String   @id @default(uuid())
+  sessionToken  String   @unique
+  expires       DateTime
+  user          User     @relation("UserAuthSessions", fields: [userId], references: [id])
+  userId        String
+}
+
+model User {
+  id                String            @id @default(uuid())
+  email             String            @unique
+  name              String?
+  image             String?
+  password          String?
+  emailVerified     DateTime?
+  role              String?           @default("user")
+  subscriptionId    String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  posts             BlogPost[]        @relation("UserPosts")
+  blogPosts         BlogPost[]        @relation("UserBlogPosts")
+  subscriptions     Subscription[]    @relation("UserSubscriptions")
+  paymentMethods    PaymentMethod[]   @relation("UserPaymentMethods")
+  auditLogs         AuditLog[]        @relation("UserAuditLogs")
+  featureUsage      FeatureUsage[]    @relation("UserFeatureUsages")
+  apiKeys           APIKey[]          @relation("UserApiKeys")
+  integrations      Integration[]     @relation("UserIntegrations")
+  authSessions      Session[]         @relation("UserAuthSessions")
+  payments          Payment[]         @relation("UserPayments")
+}
+
+model Subscription {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  status            String   // "active", "canceled", "past_due"
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
+  plan              String   // "starter", "growth", "pro", "enterprise"
+  quantity          Int      @default(1)
+  cancelAtPeriodEnd Boolean  @default(false)
+  trialEnd          DateTime?
+  trialStartedAt    DateTime?
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd  DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User     @relation("UserSubscriptions", fields: [userId], references: [id])
+  payments        Payment[]  @relation("UserSubscriptions")
+}
+
+model AddOn {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       String   // e.g. "29", "99", "159", "custom"
+  interval    String   // "monthly", "annually"
+  features    String[]
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PaymentMethod {
+  id            String   @id @default(uuid())
+  userId        String?   // nullable since some payment methods may be system/anonymous
+  name          String
+  type          String   // "card", "mpesa", "paystack", "flutterwave", "visa", "mastercard", "crypto", "ussd"
+  provider      String   // "stripe", "paystack", "flutterwave", "mpesa"
+  providerId    String?  // external provider ID (e.g., stripe PaymentMethod ID)
+  last4         String?
+  brand         String?
+  expMonth      Int?
+  expYear       Int?
+  isDefault     Boolean  @default(false)
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User? @relation("UserPaymentMethods", fields: [userId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  userId            String
+  subscriptionId    String?
+  paymentMethodId   String?
+  amount            Int      // in cents
+  currency          String   @default("usd")
+  status            String   // "succeeded", "failed", "pending", "refunded"
+  provider          String   // "stripe", "paystack", "flutterwave", "mpesa"
+  providerPaymentId String?  // external payment ID
+  invoiceId         String?
+  description       String?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation("UserPayments", fields: [userId], references: [id])
+  subscription Subscription? @relation("UserSubscriptions", fields: [subscriptionId], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  action        String   // "login", "signup", "plan_change", "payment", "feature_use"
+  details       Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  user User? @relation("UserAuditLogs", fields: [userId], references: [id])
+}
+
+model FeatureUsage {
+  id          String   @id @default(uuid())
+  userId      String
+  featureName String   // e.g., "ai_automation", "predictive_analytics", "email_marketing"
+  usageCount  Int      @default(0)
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation("UserFeatureUsages", fields: [userId], references: [id])
+}
+
+model APIKey {
+  id            String   @id @default(uuid())
+  name          String
+  keyHash       String
+  permissions   String[] // e.g., ["read:metrics", "write:automations"]
+  isActive      Boolean  @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  createdBy     String?  // user ID who created it
+
+  user User? @relation("UserApiKeys", fields: [createdBy], references: [id])
+}
+
+model Integration {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  type          String   // "stripe", "paystack", "flutterwave", "mpesa", "zapier", "make"
+  providerId    String?  // external provider reference
+  config        Json?    // integration-specific configuration
+  isActive      Boolean  @default(true)
+  lastSyncedAt  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation("UserIntegrations", fields: [userId], references: [id])
+}
+
+model Testimonial {
+  id         String   @id @default(uuid())
+  name       String
+  company    String
+  avatarUrl  String?
+  rating     Int      // 1-5
+  content    String
+  niche      String   // e.g., "saaS", "ecommerce", "healthcare", "finance"
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model BlogPost {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String // MDX or HTML
+  status      String   // "draft", "published"
+  publishedAt DateTime?
+  authorId    String?  // references User (for blogPosts relation)
+  postAuthorId String? // references User (for posts relation)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author User? @relation("UserBlogPosts", fields: [authorId], references: [id])
+  posts User? @relation("UserPosts", fields: [postAuthorId], references: [id])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  preferences Json?
+}
