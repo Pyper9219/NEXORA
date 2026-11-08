@@ -12,6 +12,7 @@ const navItems = [
   { label: "Team", href: "/dashboard/team", icon: "👥" },
   { label: "Billing", href: "/dashboard/billing", icon: "💳" },
   { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
+  { label: "Integrations", href: "/dashboard/integrations", icon: "🔌" },
 ]
 
 export function DashboardShell({

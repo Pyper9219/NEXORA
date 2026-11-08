@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 
@@ -175,6 +176,16 @@ export default async function SettingsPage() {
             <IntegrationCard key={integration} type={integration} connected={!!user?.integrations?.find(i => i.type === integration)} />
           ))}
         </div>
+        <p className="mt-4 text-white/50 text-sm">
+          Connect external APIs (Apify actors, generic REST APIs) for automations,
+          lead enrichment, content scraping, and more:{" "}
+          <Link
+            href="/dashboard/integrations"
+            className="text-violet-400 hover:text-violet-300 font-medium underline"
+          >
+            Open Integrations Hub
+          </Link>
+        </p>
       </section>
 
       {/* Danger Zone */}

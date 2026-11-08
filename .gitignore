@@ -15,3 +15,5 @@ build
 # Local Prisma engine cache (created when HOME/XDG_CACHE_HOME is overridden)
 .prisma-home
 .prisma-cache
+.neon
+.neon-home
