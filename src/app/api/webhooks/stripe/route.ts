@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { headers } from "next/headers"
 import Stripe from "stripe"
 import { prisma } from "@/lib/prisma"
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2026-10-28.endive",
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ""
+import { getStripe } from "@/lib/stripe"
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +16,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+    if (!webhookSecret) {
+      console.error("STRIPE_WEBHOOK_SECRET is not set")
+      return NextResponse.json(
+        { error: "Webhook is not configured" },
+        { status: 500 }
+      )
+    }
+
+    const stripe = getStripe()
 
     let event: Stripe.Event
 
@@ -82,6 +89,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const stripe = getStripe()
   const customerId = session.customer as string
   const subscriptionId = session.subscription as string
   const userId = session.metadata?.userId

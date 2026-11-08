@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
@@ -96,7 +97,7 @@ export default async function AutomationsPage() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return null
+    redirect("/auth/signin")
   }
 
   const { featureUsage, subscription } = await getAutomationsData(session.user.id)

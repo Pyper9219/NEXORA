@@ -1,8 +1,17 @@
 node_modules
 .next
-.env
-.env.local
 dist
 build
 .vercel
-.env*
+
+# Environment files (the example is committed on purpose)
+.env
+.env.*
+!.env.example
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Local Prisma engine cache (created when HOME/XDG_CACHE_HOME is overridden)
+.prisma-home
+.prisma-cache

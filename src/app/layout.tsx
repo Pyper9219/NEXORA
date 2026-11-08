@@ -6,6 +6,9 @@ import { Providers } from './providers'
 // to avoid network dependencies in restricted environments
 
 export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
   title: 'Nexora | AI-Powered Business Growth Platform',
   description: 'Transform your business with intelligent automation, predictive analytics, and AI-powered growth tools. Join 2,000+ businesses already scaling faster.',
   openGraph: {

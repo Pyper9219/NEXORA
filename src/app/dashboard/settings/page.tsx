@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 
@@ -18,7 +19,7 @@ export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return null
+    redirect("/auth/signin")
   }
 
   const user = await getUserData(session.user.id)

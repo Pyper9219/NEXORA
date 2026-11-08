@@ -88,9 +88,10 @@ export const authOptions = {
   ],
 
   pages: {
-    signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
-    verifyRequest: "/auth/verify-request"
+    // Only override sign-in: src/app/auth/signin exists. The other NextAuth
+    // pages (signout, error, verify-request) have no route in this app, so
+    // overriding them would redirect users to a 404. Leave them at the
+    // NextAuth defaults.
+    signIn: "/auth/signin"
   }
 }

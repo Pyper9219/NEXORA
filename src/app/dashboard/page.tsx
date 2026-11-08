@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return null // Layout will handle redirect
+    redirect("/auth/signin")
   }
 
   const { subscription, recentActivity, featureUsage } = await getDashboardData(session.user.id)
