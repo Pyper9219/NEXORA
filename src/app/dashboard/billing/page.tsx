@@ -5,24 +5,48 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { ManageSubscriptionButton } from "@/components/manage-subscription-button"
 
+/**
+ * Safely runs a Prisma query, returning null on failure.
+ */
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    console.error("Billing query failed:", error)
+    return fallback
+  }
+}
+
 async function getBillingData(userId: string) {
   const [subscription, payments, paymentMethods] = await Promise.all([
-    prisma.subscription.findUnique({
-      where: { userId },
-      include: { user: true }
-    }),
-    prisma.auditLog.findMany({
-      where: { 
-        userId,
-        action: { in: ["payment_succeeded", "payment_failed", "subscription_created", "subscription_updated"] }
-      },
-      orderBy: { createdAt: "desc" },
-      take: 20
-    }),
-    prisma.paymentMethod.findMany({
-      where: { userId },
-      orderBy: { isDefault: "desc" }
-    })
+    safeQuery(
+      () =>
+        prisma.subscription.findUnique({
+          where: { userId },
+          include: { user: true },
+        }),
+      null
+    ),
+    safeQuery(
+      () =>
+        prisma.auditLog.findMany({
+          where: {
+            userId,
+            action: { in: ["payment_succeeded", "payment_failed", "subscription_created", "subscription_updated"] },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.paymentMethod.findMany({
+          where: { userId },
+          orderBy: { isDefault: "desc" },
+        }),
+      []
+    ),
   ])
 
   return { subscription, payments, paymentMethods }
@@ -32,28 +56,28 @@ const planDetails: Record<string, { name: string; price: string; features: strin
   starter: {
     name: "Starter",
     price: "$29/mo",
-    features: ["100 automation tasks/month", "Email support", "Basic analytics", "1 user seat"]
+    features: ["100 automation tasks/month", "Email support", "Basic analytics", "1 user seat"],
   },
   growth: {
     name: "Growth",
     price: "$79/mo",
-    features: ["500 automation tasks/month", "Email & Chat support", "Advanced analytics", "3 user seats", "AI predictive insights"]
+    features: ["500 automation tasks/month", "Email & Chat support", "Advanced analytics", "3 user seats", "AI predictive insights"],
   },
   pro: {
     name: "Pro",
     price: "$159/mo",
-    features: ["1,000 automation tasks/month", "Priority support", "All features", "5 user seats", "Custom integrations", "API access"]
+    features: ["1,000 automation tasks/month", "Priority support", "All features", "5 user seats", "Custom integrations", "API access"],
   },
   enterprise: {
     name: "Enterprise",
     price: "Custom",
-    features: ["Unlimited tasks", "Dedicated account manager", "White-label solution", "Custom compliance", "SLA guaranteed", "On-premise option"]
-  }
+    features: ["Unlimited tasks", "Dedicated account manager", "White-label solution", "Custom compliance", "SLA guaranteed", "On-premise option"],
+  },
 }
 
 export default async function BillingPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
@@ -72,23 +96,22 @@ export default async function BillingPage() {
 
   const statusColor = statusColors[subscription?.status || "inactive"] || statusColors.canceled
 
-  // Type-safe access to payment details
   const getPaymentAmount = (details: any) => {
-    if (details && typeof details === 'object' && 'amount' in details) {
+    if (details && typeof details === "object" && "amount" in details) {
       return details.amount
     }
     return null
   }
 
   const getPaymentCurrency = (details: any) => {
-    if (details && typeof details === 'object' && 'currency' in details) {
+    if (details && typeof details === "object" && "currency" in details) {
       return details.currency
     }
-    return 'usd'
+    return "usd"
   }
 
   const getPaymentDescription = (details: any) => {
-    if (details && typeof details === 'object' && 'description' in details) {
+    if (details && typeof details === "object" && "description" in details) {
       return details.description
     }
     return null
@@ -124,9 +147,7 @@ export default async function BillingPage() {
           <div className="bg-gray-800/50 rounded-xl p-4">
             <p className="text-white/50 text-sm">Next Billing Date</p>
             <p className="text-white font-medium">
-              {subscription?.currentPeriodEnd 
-                ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
-                : "—"}
+              {subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString() : "—"}
             </p>
           </div>
           <div className="bg-gray-800/50 rounded-xl p-4">
@@ -164,7 +185,7 @@ export default async function BillingPage() {
           {plan.features.map((feature, index) => (
             <div key={index} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg">
               <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
               <span className="text-white">{feature}</span>
             </div>
@@ -220,7 +241,7 @@ export default async function BillingPage() {
                   const amount = getPaymentAmount(details)
                   const currency = getPaymentCurrency(details)
                   const description = getPaymentDescription(details)
-                  
+
                   return (
                     <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                       <td className="py-4 px-4 text-white/70 text-sm">
@@ -230,14 +251,12 @@ export default async function BillingPage() {
                         {description || payment.action}
                       </td>
                       <td className="py-4 px-4 text-white font-medium text-sm">
-                        {amount !== null 
-                          ? `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`
-                          : "—"}
+                        {amount !== null ? `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}` : "—"}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          payment.action.includes("failed") 
-                            ? "bg-red-500/20 text-red-400" 
+                          payment.action.includes("failed")
+                            ? "bg-red-500/20 text-red-400"
                             : "bg-green-500/20 text-green-400"
                         }`}>
                           {payment.action.includes("failed") ? "Failed" : "Succeeded"}

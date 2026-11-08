@@ -5,15 +5,35 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { Plus, Mail, UserCheck, UserX, MoreVertical } from "lucide-react"
 
+/**
+ * Safely runs a Prisma query, returning null on failure.
+ */
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    console.error("Team query failed:", error)
+    return fallback
+  }
+}
+
 async function getTeamData(userId: string) {
   const [subscription, user] = await Promise.all([
-    prisma.subscription.findUnique({
-      where: { userId }
-    }),
-    prisma.user.findUnique({
-      where: { id: userId },
-      include: { subscriptions: true }
-    })
+    safeQuery(
+      () =>
+        prisma.subscription.findUnique({
+          where: { userId },
+        }),
+      null
+    ),
+    safeQuery(
+      () =>
+        prisma.user.findUnique({
+          where: { id: userId },
+          include: { subscriptions: true },
+        }),
+      null
+    ),
   ])
 
   return { subscription, user }
@@ -28,7 +48,7 @@ const planSeats: Record<string, number> = {
 
 export default async function TeamPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
@@ -76,7 +96,7 @@ export default async function TeamPage() {
             </p>
           </div>
           <div className="w-48 h-3 bg-gray-800 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-violet-500 rounded-full transition-all duration-500"
               style={{ width: maxSeats === 999 ? "100%" : `${(currentSeats / maxSeats) * 100}%` }}
             />
@@ -92,7 +112,7 @@ export default async function TeamPage() {
       {/* Team Members */}
       <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
         <h2 className="text-xl font-display font-bold text-white mb-6">Team Members</h2>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -183,20 +203,20 @@ export default async function TeamPage() {
       <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
         <h2 className="text-xl font-display font-bold text-white mb-6">Roles & Permissions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <RoleCard 
-            name="Owner" 
+          <RoleCard
+            name="Owner"
             description="Full access to all features, billing, and team management"
             permissions={["All permissions", "Manage billing", "Delete account", "Transfer ownership"]}
             color="violet"
           />
-          <RoleCard 
-            name="Admin" 
+          <RoleCard
+            name="Admin"
             description="Manage team members, automations, and view analytics"
             permissions={["Manage automations", "View analytics", "Invite members", "Manage integrations"]}
             color="blue"
           />
-          <RoleCard 
-            name="Member" 
+          <RoleCard
+            name="Member"
             description="Create and run automations, view assigned reports"
             permissions={["Create automations", "Run automations", "View own reports"]}
             color="green"

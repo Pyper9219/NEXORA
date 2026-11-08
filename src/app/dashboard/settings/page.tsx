@@ -4,21 +4,37 @@ import Link from "next/link"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 
+/**
+ * Safely runs a Prisma query, returning null on failure.
+ */
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    console.error("Settings query failed:", error)
+    return fallback
+  }
+}
+
 async function getUserData(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      subscriptions: true,
-      apiKeys: true,
-      integrations: true,
-    }
-  })
+  const user = await safeQuery(
+    () =>
+      prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          subscriptions: true,
+          apiKeys: true,
+          integrations: true,
+        },
+      }),
+    null
+  )
   return user
 }
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
@@ -137,7 +153,7 @@ export default async function SettingsPage() {
                   <div>
                     <p className="text-white font-medium">{key.name}</p>
                     <p className="text-white/50 text-sm">
-                      {key.isActive ? "Active" : "Inactive"} • 
+                      {key.isActive ? "Active" : "Inactive"} •
                       {key.expiresAt ? `Expires ${new Date(key.expiresAt).toLocaleDateString()}` : "No expiration"}
                     </p>
                   </div>
@@ -232,7 +248,7 @@ function IntegrationCard({ type, connected }: { type: string; connected: boolean
       <p className="text-white font-medium">{info.name}</p>
       <p className="text-white/50 text-sm mt-1">{info.description}</p>
       <button className={`w-full mt-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-        connected 
+        connected
           ? "border-2 border-white/20 text-white/70 hover:border-violet-400 hover:text-violet-400"
           : "bg-violet-600 text-white hover:bg-violet-500"
       }`}>

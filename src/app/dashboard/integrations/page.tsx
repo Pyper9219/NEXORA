@@ -8,7 +8,7 @@ import { IntegrationsHub } from "@/components/integrations-hub"
  * Integrations dashboard page.
  *
  * Lets the signed-in user store API keys for external services (from the
- * API Mega List) and test / run them directly from NEXORA.
+ * API Mega List) and test / run them directly from the dashboard.
  */
 export default async function IntegrationsPage() {
   const session = await getServerSession(authOptions)
@@ -17,9 +17,16 @@ export default async function IntegrationsPage() {
     redirect("/auth/signin")
   }
 
-  const integration = await prisma.integration.findUnique({
-    where: { userId: session.user.id },
-  })
+  const integration = await (async () => {
+    try {
+      return await prisma.integration.findUnique({
+        where: { userId: session.user.id },
+      })
+    } catch (error) {
+      console.error("Integrations query failed:", error)
+      return null
+    }
+  })()
 
   return (
     <div className="space-y-8">

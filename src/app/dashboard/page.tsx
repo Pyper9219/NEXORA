@@ -4,6 +4,19 @@ import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
+/**
+ * Safely runs a Prisma query, returning null on failure.
+ * Prevents a single database error from crashing the whole page.
+ */
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    console.error("Dashboard query failed:", error)
+    return fallback
+  }
+}
+
 async function getDashboardData(userId: string) {
   const [
     subscription,
@@ -12,33 +25,53 @@ async function getDashboardData(userId: string) {
     automations,
     automationRuns,
   ] = await Promise.all([
-    prisma.subscription.findUnique({
-      where: { userId },
-      include: { user: true },
-    }),
-    prisma.auditLog.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.featureUsage.findMany({
-      where: { userId },
-      orderBy: { usageCount: "desc" },
-    }),
-    prisma.automation.findMany({
-      where: { userId },
-      include: {
-        runs: {
+    safeQuery(
+      () =>
+        prisma.subscription.findUnique({
+          where: { userId },
+          include: { user: true },
+        }),
+      null
+    ),
+    safeQuery(
+      () =>
+        prisma.auditLog.findMany({
+          where: { userId },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.featureUsage.findMany({
+          where: { userId },
+          orderBy: { usageCount: "desc" },
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.automation.findMany({
+          where: { userId },
+          include: {
+            runs: {
+              orderBy: { startedAt: "desc" },
+              take: 3,
+            },
+          },
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.automationRun.findMany({
+          where: { automation: { userId } },
           orderBy: { startedAt: "desc" },
-          take: 3,
-        },
-      },
-    }),
-    prisma.automationRun.findMany({
-      where: { automation: { userId } },
-      orderBy: { startedAt: "desc" },
-      take: 50,
-    }),
+          take: 50,
+        }),
+      []
+    ),
   ])
 
   return { subscription, recentActivity, featureUsage, automations, automationRuns }

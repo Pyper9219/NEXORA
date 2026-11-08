@@ -3,20 +3,45 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 
+/**
+ * Safely runs a Prisma query, returning null on failure.
+ * Prevents a single database error from crashing the whole page.
+ */
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn()
+  } catch (error) {
+    console.error("Analytics query failed:", error)
+    return fallback
+  }
+}
+
 async function getAnalyticsData(userId: string) {
   const [featureUsage, recentActivity, subscription] = await Promise.all([
-    prisma.featureUsage.findMany({
-      where: { userId },
-      orderBy: { usageCount: "desc" }
-    }),
-    prisma.auditLog.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 50
-    }),
-    prisma.subscription.findUnique({
-      where: { userId }
-    })
+    safeQuery(
+      () =>
+        prisma.featureUsage.findMany({
+          where: { userId },
+          orderBy: { usageCount: "desc" },
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.auditLog.findMany({
+          where: { userId },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        }),
+      []
+    ),
+    safeQuery(
+      () =>
+        prisma.subscription.findUnique({
+          where: { userId },
+        }),
+      null
+    ),
   ])
 
   return { featureUsage, recentActivity, subscription }
@@ -24,7 +49,7 @@ async function getAnalyticsData(userId: string) {
 
 export default async function AnalyticsPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
