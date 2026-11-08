@@ -5,33 +5,58 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
 async function getDashboardData(userId: string) {
-  const [subscription, recentActivity, featureUsage] = await Promise.all([
+  const [
+    subscription,
+    recentActivity,
+    featureUsage,
+    automations,
+    automationRuns,
+  ] = await Promise.all([
     prisma.subscription.findUnique({
       where: { userId },
-      include: { user: true }
+      include: { user: true },
     }),
     prisma.auditLog.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      take: 10
+      take: 10,
     }),
     prisma.featureUsage.findMany({
       where: { userId },
-      orderBy: { usageCount: "desc" }
-    })
+      orderBy: { usageCount: "desc" },
+    }),
+    prisma.automation.findMany({
+      where: { userId },
+      include: {
+        runs: {
+          orderBy: { startedAt: "desc" },
+          take: 3,
+        },
+      },
+    }),
+    prisma.automationRun.findMany({
+      where: { automation: { userId } },
+      orderBy: { startedAt: "desc" },
+      take: 50,
+    }),
   ])
 
-  return { subscription, recentActivity, featureUsage }
+  return { subscription, recentActivity, featureUsage, automations, automationRuns }
 }
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
 
-  const { subscription, recentActivity, featureUsage } = await getDashboardData(session.user.id)
+  const { subscription, recentActivity, featureUsage, automations, automationRuns } =
+    await getDashboardData(session.user.id)
+
+  const totalRuns = automations.reduce((sum, a) => sum + a.totalRuns, 0)
+  const successfulRuns = automationRuns.filter((r) => r.status === "success").length
+  const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0
 
   const planLabels: Record<string, string> = {
     starter: "Starter",
@@ -71,35 +96,35 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Real Data */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Automations Run"
-          value="1,234"
-          change="+12%"
-          changeLabel="vs last month"
+          value={totalRuns.toLocaleString()}
+          change={`${successRate}% success rate`}
+          changeLabel="of total runs"
           icon="⚙️"
         />
         <StatCard
-          title="Time Saved"
-          value="48 hrs"
-          change="+8%"
-          changeLabel="vs last month"
-          icon="⏱️"
+          title="Active Automations"
+          value={automations.filter((a) => a.status === "active").length.toString()}
+          change={`of ${automations.length} total`}
+          changeLabel="automations"
+          icon="🔌"
         />
         <StatCard
-          title="Tasks Completed"
-          value="2,891"
-          change="+23%"
-          changeLabel="vs last month"
+          title="Successful Runs"
+          value={successfulRuns.toLocaleString()}
+          change={totalRuns > 0 ? `${Math.round((successfulRuns / totalRuns) * 100)}%` : "—"}
+          changeLabel="success rate"
           icon="✅"
         />
         <StatCard
-          title="ROI Increase"
-          value="247%"
-          change="+15%"
-          changeLabel="vs last month"
-          icon="📈"
+          title="Features Used"
+          value={featureUsage.length.toString()}
+          change={featureUsage.reduce((s, f) => s + f.usageCount, 0).toString()}
+          changeLabel="total uses"
+          icon="📊"
         />
       </div>
 
@@ -116,7 +141,7 @@ export default async function DashboardPage() {
               Manage Billing →
             </Link>
           </div>
-          
+
           <div className="bg-gray-800/50 rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -127,12 +152,12 @@ export default async function DashboardPage() {
                 {subscription?.status || "inactive"}
               </span>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <p className="text-white/50 text-sm">Billing Cycle</p>
                 <p className="text-white font-medium">
-                  {subscription?.currentPeriodEnd 
+                  {subscription?.currentPeriodEnd
                     ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
                     : "—"}
                 </p>
@@ -140,7 +165,7 @@ export default async function DashboardPage() {
               <div>
                 <p className="text-white/50 text-sm">Next Payment</p>
                 <p className="text-white font-medium">
-                  {subscription?.currentPeriodEnd 
+                  {subscription?.currentPeriodEnd
                     ? `$${subscription.plan === "starter" ? "29" : subscription.plan === "growth" ? "79" : subscription.plan === "pro" ? "159" : "Custom"}`
                     : "—"}
                 </p>
@@ -225,7 +250,7 @@ export default async function DashboardPage() {
               View All →
             </Link>
           </div>
-          
+
           {recentActivity.length > 0 ? (
             <div className="space-y-4">
               {recentActivity.slice(0, 5).map((activity) => (
@@ -243,7 +268,7 @@ export default async function DashboardPage() {
         {/* Most Used Features */}
         <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
           <h2 className="text-xl font-display font-bold text-white mb-6">Most Used Features</h2>
-          
+
           {featureUsage.length > 0 ? (
             <div className="space-y-4">
               {featureUsage.slice(0, 5).map((feature) => (
@@ -258,6 +283,50 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Recent Automations */}
+      {automations.length > 0 && (
+        <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-display font-bold text-white">Your Automations</h2>
+            <Link
+              href="/dashboard/automations"
+              className="text-violet-400 text-sm font-medium hover:text-violet-300 transition-colors"
+            >
+              Manage All →
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {automations.slice(0, 3).map((auto) => (
+              <div key={auto.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-white/5 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-medium truncate">{auto.name}</p>
+                  <p className="text-white/50 text-sm truncate">{auto.trigger}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    auto.status === "active"
+                      ? "bg-green-500/20 text-green-400"
+                      : auto.status === "paused"
+                      ? "bg-yellow-500/20 text-yellow-400"
+                      : "bg-gray-500/20 text-gray-400"
+                  }`}>
+                    {auto.status}
+                  </span>
+                  <button
+                    onClick={() => {
+                      // Client-side navigation to run
+                    }}
+                    className="text-violet-400 text-xs font-medium hover:text-violet-300 transition-colors"
+                  >
+                    Run
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -269,8 +338,8 @@ function StatCard({ title, value, change, changeLabel, icon }: {
   changeLabel: string
   icon: string
 }) {
-  const isPositive = change.startsWith("+")
-  
+  const isPositive = !change.startsWith("-")
+
   return (
     <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10 hover:border-violet-500/30 transition-colors">
       <div className="flex items-center justify-between">
@@ -302,6 +371,8 @@ function ActivityItem({ activity }: { activity: any }) {
     subscription_canceled: "Canceled subscription",
     payment_succeeded: "Payment succeeded",
     payment_failed: "Payment failed",
+    automation_created: "Created automation",
+    automation_run: "Ran automation",
   }
 
   const actionLabel = actionLabels[activity.action] || activity.action

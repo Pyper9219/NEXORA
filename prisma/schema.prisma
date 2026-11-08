@@ -38,6 +38,7 @@ model User {
   integrations      Integration[]     @relation("UserIntegrations")
   authSessions      Session[]         @relation("UserAuthSessions")
   payments          Payment[]         @relation("UserPayments")
+  automations       Automation[]
 }
 
 model Subscription {
@@ -135,6 +136,8 @@ model FeatureUsage {
   createdAt   DateTime @default(now())
 
   user User @relation("UserFeatureUsages", fields: [userId], references: [id])
+
+  @@unique([userId, featureName])
 }
 
 model APIKey {
@@ -199,4 +202,37 @@ model NewsletterSubscriber {
   isActive  Boolean  @default(true)
   subscribedAt DateTime @default(now())
   preferences Json?
+}
+
+
+model Automation {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  trigger     String   // e.g., "new_user_signup", "cart_abandoned", "schedule"
+  status      String   // "active", "paused", "draft"
+  templateId  String?  // references which template was used
+  config      Json?    // automation configuration (steps, actions, integrations)
+  totalRuns   Int      @default(0)
+  lastRunAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  runs        AutomationRun[]
+}
+
+model AutomationRun {
+  id          String   @id @default(uuid())
+  automationId String
+  status      String   // "success", "failed", "running"
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  durationMs  Int?
+  input       Json?
+  output      Json?
+  error       String?
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
 }

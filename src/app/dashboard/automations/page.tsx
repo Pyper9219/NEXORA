@@ -1,24 +1,43 @@
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "@/auth/[...nextauth]"
-import { prisma } from "@/lib/prisma"
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 
-async function getAutomationsData(userId: string) {
-  const [featureUsage, subscription] = await Promise.all([
-    prisma.featureUsage.findMany({
-      where: { userId },
-      orderBy: { usageCount: "desc" }
-    }),
-    prisma.subscription.findUnique({
-      where: { userId }
-    })
-  ])
-
-  return { featureUsage, subscription }
+type Automation = {
+  id: string
+  name: string
+  description: string | null
+  trigger: string
+  status: string
+  templateId: string | null
+  config: any
+  totalRuns: number
+  lastRunAt: string | null
+  createdAt: string
+  updatedAt: string
+  runs: Array<{
+    id: string
+    status: string
+    startedAt: string
+    completedAt: string | null
+    durationMs: number | null
+    error: string | null
+  }>
 }
 
-const automationTemplates = [
+type Template = {
+  id: string
+  name: string
+  description: string
+  category: string
+  icon: string
+  difficulty: string
+  estimatedTime: string
+  trigger: string
+}
+
+const automationTemplates: Template[] = [
   {
     id: "welcome-sequence",
     name: "Welcome Email Sequence",
@@ -27,6 +46,7 @@ const automationTemplates = [
     icon: "📧",
     difficulty: "Easy",
     estimatedTime: "5 min",
+    trigger: "new_user_signup",
   },
   {
     id: "cart-abandonment",
@@ -36,6 +56,7 @@ const automationTemplates = [
     icon: "🛒",
     difficulty: "Medium",
     estimatedTime: "15 min",
+    trigger: "cart_abandoned",
   },
   {
     id: "lead-scoring",
@@ -45,6 +66,7 @@ const automationTemplates = [
     icon: "🎯",
     difficulty: "Medium",
     estimatedTime: "10 min",
+    trigger: "lead_scoring",
   },
   {
     id: "invoice-processing",
@@ -54,6 +76,7 @@ const automationTemplates = [
     icon: "📄",
     difficulty: "Hard",
     estimatedTime: "30 min",
+    trigger: "invoice_processing",
   },
   {
     id: "social-scheduling",
@@ -63,6 +86,7 @@ const automationTemplates = [
     icon: "📱",
     difficulty: "Easy",
     estimatedTime: "10 min",
+    trigger: "social_media_post",
   },
   {
     id: "customer-support",
@@ -72,6 +96,7 @@ const automationTemplates = [
     icon: "🎧",
     difficulty: "Medium",
     estimatedTime: "15 min",
+    trigger: "support_ticket",
   },
   {
     id: "data-sync",
@@ -81,6 +106,7 @@ const automationTemplates = [
     icon: "🔄",
     difficulty: "Easy",
     estimatedTime: "5 min",
+    trigger: "data_sync",
   },
   {
     id: "report-generation",
@@ -90,26 +116,126 @@ const automationTemplates = [
     icon: "📊",
     difficulty: "Medium",
     estimatedTime: "10 min",
+    trigger: "report_generation",
   },
 ]
 
-export default async function AutomationsPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    redirect("/auth/signin")
+const statusColors: Record<string, string> = {
+  active: "bg-green-500/20 text-green-400 border-green-500/30",
+  paused: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  draft: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+}
+
+const difficultyColors: Record<string, string> = {
+  Easy: "bg-green-500/20 text-green-400",
+  Medium: "bg-yellow-500/20 text-yellow-400",
+  Hard: "bg-red-500/20 text-red-400",
+}
+
+type Tab = "my" | "templates"
+
+export default function AutomationsPage() {
+  const { data: session } = useSession()
+  const [tab, setTab] = useState<Tab>("my")
+  const [automations, setAutomations] = useState<Automation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [running, setRunning] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  useEffect(() => {
+    fetchAutomations()
+  }, [])
+
+  const fetchAutomations = async () => {
+    try {
+      const res = await fetch("/api/automations")
+      const data = await res.json()
+      setAutomations(data.automations || [])
+    } catch (err) {
+      console.error("Failed to fetch automations:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const { featureUsage, subscription } = await getAutomationsData(session.user.id)
-  const totalRuns = featureUsage.reduce((sum, f) => sum + f.usageCount, 0)
-
-  const planLimits: Record<string, number> = {
-    starter: 100,
-    growth: 500,
-    pro: 1000,
-    enterprise: 10000,
+  const notify = (type: "success" | "error", text: string) => {
+    setMessage({ type, text })
+    setTimeout(() => setMessage(null), 5000)
   }
-  const limit = planLimits[subscription?.plan || "starter"] || 100
+
+  const handleCreateFromTemplate = async (template: Template) => {
+    try {
+      const res = await fetch("/api/automations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: template.name,
+          description: template.description,
+          trigger: template.trigger,
+          status: "draft",
+          templateId: template.id,
+          config: { templateId: template.id, steps: [] },
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to create automation")
+      await fetchAutomations()
+      setTab("my")
+      notify("success", `Automation "${template.name}" created!`)
+    } catch (err) {
+      notify("error", err instanceof Error ? err.message : "Failed to create automation")
+    }
+  }
+
+  const handleRun = async (automationId: string) => {
+    setRunning(automationId)
+    try {
+      const res = await fetch(`/api/automations/${automationId}/run`, {
+        method: "POST",
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Run failed")
+      await fetchAutomations()
+      notify("success", "Automation executed successfully!")
+    } catch (err) {
+      notify("error", err instanceof Error ? err.message : "Run failed")
+    } finally {
+      setRunning(null)
+    }
+  }
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    try {
+      const res = await fetch(`/api/automations/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: currentStatus === "active" ? "paused" : "active" }),
+      })
+      if (!res.ok) throw new Error("Failed to update")
+      await fetchAutomations()
+    } catch (err) {
+      notify("error", err instanceof Error ? err.message : "Failed to update automation")
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this automation?")) return
+    try {
+      const res = await fetch(`/api/automations/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Failed to delete")
+      await fetchAutomations()
+      notify("success", "Automation deleted")
+    } catch (err) {
+      notify("error", err instanceof Error ? err.message : "Failed to delete automation")
+    }
+  }
+
+  const totalRuns = automations.reduce((sum, a) => sum + a.totalRuns, 0)
+  const successfulRuns = automations.reduce(
+    (sum, a) => sum + a.runs.filter((r) => r.status === "success").length,
+    0
+  )
+
 
   return (
     <div className="space-y-8">
@@ -119,103 +245,134 @@ export default async function AutomationsPage() {
           <h1 className="text-3xl font-display font-bold text-white">Automations</h1>
           <p className="text-white/50 mt-1">Build and manage your automated workflows</p>
         </div>
-        <Link
-          href="/dashboard/automations#templates"
-          className="bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors flex items-center gap-2"
+        <div className="flex gap-3">
+          <button
+            onClick={() => setTab("templates")}
+            className={`px-4 py-2 border border-white/10 rounded-lg text-sm font-medium transition-colors ${
+              tab === "templates" ? "bg-violet-600 text-white" : "text-white/50 hover:text-white/70 hover:border-white/20"
+            }`}
+          >
+            Templates
+          </button>
+          <button
+            onClick={() => setTab("my")}
+            className={`px-4 py-2 border border-white/10 rounded-lg text-sm font-medium transition-colors ${
+              tab === "my" ? "bg-violet-600 text-white" : "text-white/50 hover:text-white/70 hover:border-white/20"
+            }`}
+          >
+            My Automations
+          </button>
+        </div>
+      </div>
+
+      {/* Message */}
+      {message && (
+        <div
+          className={`p-4 rounded-lg ${
+            message.type === "success"
+              ? "bg-green-500/10 border border-green-500/20 text-green-400"
+              : "bg-red-500/10 border border-red-500/20 text-red-400"
+          }`}
         >
-          <span>+</span>
-          Create Automation
-        </Link>
-      </div>
-
-      {/* Usage Bar */}
-      <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-white/50 text-sm">Monthly Automation Runs</p>
-            <p className="text-2xl font-display font-bold text-white">{totalRuns.toLocaleString()} / {limit.toLocaleString()}</p>
-          </div>
-          <div className="w-48 h-3 bg-gray-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-violet-500 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min((totalRuns / limit) * 100, 100)}%` }}
-            />
-          </div>
+          {message.text}
         </div>
-        <p className="text-white/50 text-sm">
-          {subscription?.plan === "starter" && totalRuns > limit * 0.8 && (
-            <span className="text-yellow-400">⚠️ You're approaching your limit. Consider upgrading for more runs.</span>
-          )}
-          {subscription?.plan === "starter" && totalRuns <= limit * 0.8 && (
-            <span>{limit - totalRuns} runs remaining this period</span>
-          )}
-          {subscription?.plan !== "starter" && (
-            <span>Unlimited runs on {subscription?.plan} plan</span>
-          )}
-        </p>
-      </div>
+      )}
 
-      {/* My Automations */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-display font-bold text-white">My Automations</h2>
-          <select className="bg-gray-800/50 border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-            <option value="draft">Draft</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { name: "Welcome Email Sequence", status: "active", runs: 1247, lastRun: "2 hours ago", trigger: "New user signup" },
-            { name: "Cart Abandonment Recovery", status: "active", runs: 892, lastRun: "30 min ago", trigger: "Cart abandoned" },
-            { name: "Lead Scoring", status: "paused", runs: 456, lastRun: "3 days ago", trigger: "Form submission" },
-            { name: "Weekly Report Generation", status: "active", runs: 12, lastRun: "1 day ago", trigger: "Schedule (Mondays)" },
-          ].map((auto, i) => (
-            <AutomationCard key={i} automation={auto} />
-          ))}
-        </div>
-
-        {featureUsage.length === 0 && (
-          <div className="text-center py-12 bg-gray-900/50 rounded-2xl border border-white/10 border-dashed">
-            <span className="text-6xl mb-4 block">⚙️</span>
-            <h3 className="text-xl font-display font-bold text-white mb-2">No automations yet</h3>
-            <p className="text-white/50 mb-6 max-w-md mx-auto">
-              Create your first automation to start saving time and scaling your operations.
+      {/* Tab: My Automations */}
+      {tab === "my" && (
+        <>
+          {/* Usage Bar */}
+          <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-white/50 text-sm">Monthly Automation Runs</p>
+                <p className="text-2xl font-display font-bold text-white">
+                  {totalRuns.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-48 h-3 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-violet-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min((totalRuns / 100) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-white/50 text-sm">
+              {successfulRuns} of {totalRuns} runs successful
             </p>
-            <Link
-              href="/dashboard/automations#templates"
-              className="inline-flex items-center gap-2 bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors"
-            >
-              Create Your First Automation
-            </Link>
           </div>
-        )}
-      </div>
 
-      {/* Template Library */}
-      <div id="templates" className="scroll-mt-24">
-        <h2 className="text-xl font-display font-bold text-white mb-6">Automation Templates</h2>
-        <p className="text-white/50 mb-6">Get started quickly with pre-built automation templates</p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {automationTemplates.map((template) => (
-            <TemplateCard key={template.id} template={template} />
-          ))}
+          {/* My Automations List */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-display font-bold text-white">My Automations</h2>
+            </div>
+
+            {automations.length === 0 ? (
+              <div className="text-center py-12 bg-gray-900/50 rounded-2xl border border-white/10 border-dashed">
+                <span className="text-6xl mb-4 block">⚙️</span>
+                <h3 className="text-xl font-display font-bold text-white mb-2">No automations yet</h3>
+                <p className="text-white/50 mb-6 max-w-md mx-auto">
+                  Create your first automation from the Templates tab to start saving time.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {automations.map((auto) => (
+                  <AutomationCard
+                    key={auto.id}
+                    automation={auto}
+                    onRun={handleRun}
+                    onToggle={handleToggleStatus}
+                    onDelete={handleDelete}
+                    isRunning={running === auto.id}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Tab: Templates */}
+      {tab === "templates" && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-display font-bold text-white">Automation Templates</h2>
+            <p className="text-white/50 text-sm">
+              Get started quickly with pre-built automation templates
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {automationTemplates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onUse={handleCreateFromTemplate}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
 
-function AutomationCard({ automation }: { automation: any }) {
-  const statusColors: Record<string, string> = {
-    active: "bg-green-500/20 text-green-400 border-green-500/30",
-    paused: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    draft: "bg-gray-500/20 text-gray-400 border-gray-500/30",
-  }
+function AutomationCard({
+  automation,
+  onRun,
+  onToggle,
+  onDelete,
+  isRunning,
+}: {
+  automation: Automation
+  onRun: (id: string) => void
+  onToggle: (id: string, status: string) => void
+  onDelete: (id: string) => void
+  isRunning: boolean
+}) {
+  const lastRun = automation.runs[0]
 
   return (
     <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10 hover:border-violet-500/30 transition-colors">
@@ -232,39 +389,63 @@ function AutomationCard({ automation }: { automation: any }) {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <p className="text-white/50 text-xs">Total Runs</p>
-          <p className="text-white font-bold">{automation.runs.toLocaleString()}</p>
+          <p className="text-white font-bold">{automation.totalRuns.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-white/50 text-xs">Last Run</p>
-          <p className="text-white font-medium">{automation.lastRun}</p>
+          <p className="text-white font-medium">
+            {lastRun ? new Date(lastRun.startedAt).toLocaleDateString() : "Never"}
+          </p>
         </div>
       </div>
 
       <div className="flex gap-2">
-        <button className="flex-1 border-2 border-white/20 text-white/70 px-3 py-2 rounded-lg text-sm font-medium hover:border-violet-400 hover:text-violet-400 transition-colors">
-          Edit
+        <button
+          onClick={() => onRun(automation.id)}
+          disabled={isRunning}
+          className="flex-1 bg-violet-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isRunning ? "Running…" : "Run"}
         </button>
-        <button className="flex-1 border-2 border-white/20 text-white/70 px-3 py-2 rounded-lg text-sm font-medium hover:border-violet-400 hover:text-violet-400 transition-colors">
-          View Runs
+        <button
+          onClick={() => onToggle(automation.id, automation.status)}
+          className="flex-1 border-2 border-white/20 text-white/70 px-3 py-2 rounded-lg text-sm font-medium hover:border-violet-400 hover:text-violet-400 transition-colors"
+        >
+          {automation.status === "active" ? "Pause" : "Activate"}
+        </button>
+        <button
+          onClick={() => onDelete(automation.id)}
+          className="flex-1 border-2 border-red-500/30 text-red-400 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-500/10 transition-colors"
+        >
+          Delete
         </button>
       </div>
+
+      {lastRun && (
+        <div className="mt-4 p-3 rounded-lg bg-gray-800/30 border border-white/5">
+          <p className="text-xs text-white/50">Last run: {lastRun.status}</p>
+          {lastRun.error && (
+            <p className="text-xs text-red-400 mt-1">{lastRun.error}</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-function TemplateCard({ template }: { template: any }) {
-  const difficultyColors: Record<string, string> = {
-    Easy: "bg-green-500/20 text-green-400",
-    Medium: "bg-yellow-500/20 text-yellow-400",
-    Hard: "bg-red-500/20 text-red-400",
-  }
-
+function TemplateCard({
+  template,
+  onUse,
+}: {
+  template: Template
+  onUse: (template: Template) => void
+}) {
   return (
     <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10 hover:border-violet-500/30 transition-colors group">
       <div className="text-4xl mb-4">{template.icon}</div>
       <h3 className="text-lg font-display font-bold text-white mb-2">{template.name}</h3>
       <p className="text-white/50 text-sm mb-4">{template.description}</p>
-      
+
       <div className="flex items-center justify-between mb-4">
         <span className="text-white/50 text-xs">{template.category}</span>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[template.difficulty]}`}>
@@ -272,12 +453,14 @@ function TemplateCard({ template }: { template: any }) {
         </span>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-white/10">
-        <span className="text-white/50 text-sm">{template.estimatedTime} setup</span>
-        <button className="text-violet-400 text-sm font-medium hover:text-violet-300 transition-colors">
-          Use Template →
-        </button>
-      </div>
+      <button
+        onClick={() => onUse(template)}
+        className="w-full py-3 rounded-lg border border-violet-500/50 bg-violet-600/10 text-violet-400 text-sm font-medium hover:bg-violet-600/20 hover:text-violet-300 transition-colors"
+      >
+        Use Template →
+      </button>
     </div>
   )
 }
+
+
