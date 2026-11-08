@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
-import { Navbar } from "@/components/ui/navbar"
+import type { Session } from "next-auth"
 import { X, Menu } from "lucide-react"
 
 const navItems = [
@@ -15,21 +14,25 @@ const navItems = [
   { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
 ]
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession()
+export function DashboardShell({
+  children,
+  session,
+}: {
+  children: React.ReactNode
+  session: Session
+}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   if (!session?.user) {
-    // Transient state while useSession() resolves. Unauthenticated visitors are
-    // already redirected by the server layout before this renders.
+    // The server layout already redirects unauthenticated visitors; this is
+    // only a type narrowing guard.
     return null
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <Navbar />
-
-      <div className="pt-20">
+    <div className="min-h-[calc(100vh-5rem)] bg-gray-950">
+      {/* The root layout already offsets the fixed navbar by pt-20. */}
+      <div>
         {/* Mobile Sidebar Toggle Button */}
         <button
           className="lg:hidden fixed bottom-6 right-6 z-50 bg-violet-600 text-white p-3 rounded-full shadow-xl hover:bg-violet-500 transition-colors touch-target focus-visible-ring"

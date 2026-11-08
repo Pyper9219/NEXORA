@@ -169,7 +169,7 @@ export default async function DashboardPage() {
           <h2 className="text-xl font-display font-bold text-white mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <Link
-              href="/dashboard/automations/new"
+              href="/dashboard/automations#templates"
               className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-violet-500/10 transition-colors"
             >
               <span className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 text-xl">⚙️</span>
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-display font-bold text-white">Recent Activity</h2>
             <Link
-              href="/dashboard/activity"
+              href="/dashboard/analytics#activity"
               className="text-violet-400 text-sm font-medium hover:text-violet-300 transition-colors"
             >
               View All →

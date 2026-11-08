@@ -112,7 +112,7 @@ export default async function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="bg-gray-900/50 rounded-2xl p-6 border border-white/10">
+      <div id="activity" className="bg-gray-900/50 rounded-2xl p-6 border border-white/10 scroll-mt-24">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-display font-bold text-white">Recent Activity</h2>
           <select className="bg-gray-800/50 border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500">

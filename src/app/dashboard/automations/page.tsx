@@ -120,7 +120,7 @@ export default async function AutomationsPage() {
           <p className="text-white/50 mt-1">Build and manage your automated workflows</p>
         </div>
         <Link
-          href="/dashboard/automations/new"
+          href="/dashboard/automations#templates"
           className="bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors flex items-center gap-2"
         >
           <span>+</span>
@@ -186,7 +186,7 @@ export default async function AutomationsPage() {
               Create your first automation to start saving time and scaling your operations.
             </p>
             <Link
-              href="/dashboard/automations/new"
+              href="/dashboard/automations#templates"
               className="inline-flex items-center gap-2 bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors"
             >
               Create Your First Automation
@@ -196,7 +196,7 @@ export default async function AutomationsPage() {
       </div>
 
       {/* Template Library */}
-      <div>
+      <div id="templates" className="scroll-mt-24">
         <h2 className="text-xl font-display font-bold text-white mb-6">Automation Templates</h2>
         <p className="text-white/50 mb-6">Get started quickly with pre-built automation templates</p>
         

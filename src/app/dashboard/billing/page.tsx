@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/auth/[...nextauth]"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { ManageSubscriptionButton } from "@/components/manage-subscription-button"
 
 async function getBillingData(userId: string) {
   const [subscription, payments, paymentMethods] = await Promise.all([
@@ -141,12 +142,7 @@ export default async function BillingPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => window.location.href = "/api/billing-portal"}
-            className="bg-violet-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-violet-500 transition-colors"
-          >
-            Manage Subscription
-          </button>
+          <ManageSubscriptionButton />
           <Link
             href="/pricing"
             className="border-2 border-violet-400 text-violet-400 px-6 py-3 rounded-lg font-medium hover:bg-violet-600/20 transition-colors text-center"

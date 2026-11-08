@@ -88,6 +88,28 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * Maps a Stripe price ID to a plan. The previous inline map registered `""`
+ * as a key whenever a price env var was unset, so the *last* unset plan
+ * ("enterprise") silently won for every unknown price.
+ */
+function resolvePlan(priceId: string | undefined, fallback: string): string {
+  if (!priceId) return fallback
+
+  const configured: Array<[string | undefined, string]> = [
+    [process.env.STRIPE_PRICE_STARTER, "starter"],
+    [process.env.STRIPE_PRICE_GROWTH, "growth"],
+    [process.env.STRIPE_PRICE_PRO, "pro"],
+    [process.env.STRIPE_PRICE_ENTERPRISE, "enterprise"],
+  ]
+
+  for (const [configuredPrice, plan] of configured) {
+    if (configuredPrice && configuredPrice === priceId) return plan
+  }
+
+  return fallback
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const stripe = getStripe()
   const customerId = session.customer as string
@@ -99,19 +121,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
+  if (!subscriptionId) {
+    console.error("Checkout session has no subscription:", session.id)
+    return
+  }
+
   // Get subscription details from Stripe
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
   const priceId = subscription.items.data[0]?.price.id
 
-  // Determine plan from price ID
-  const planMap: Record<string, string> = {
-    [process.env.STRIPE_PRICE_STARTER || ""]: "starter",
-    [process.env.STRIPE_PRICE_GROWTH || ""]: "growth",
-    [process.env.STRIPE_PRICE_PRO || ""]: "pro",
-    [process.env.STRIPE_PRICE_ENTERPRISE || ""]: "enterprise",
-  }
-
-  const plan = planMap[priceId] || "starter"
+  const plan = resolvePlan(priceId, "starter")
 
   // Update or create subscription in database
   // Using camelCase properties for newer Stripe API
@@ -174,14 +193,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return
   }
 
-  const planMap: Record<string, string> = {
-    [process.env.STRIPE_PRICE_STARTER || ""]: "starter",
-    [process.env.STRIPE_PRICE_GROWTH || ""]: "growth",
-    [process.env.STRIPE_PRICE_PRO || ""]: "pro",
-    [process.env.STRIPE_PRICE_ENTERPRISE || ""]: "enterprise",
-  }
-
-  const plan = planMap[priceId] || userSub.plan
+  const plan = resolvePlan(priceId, userSub.plan)
 
   // Using camelCase properties for newer Stripe API
   const currentPeriodStart = (subscription as any).current_period_start 

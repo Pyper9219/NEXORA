@@ -34,9 +34,11 @@ export default function RootLayout({
       <body className="bg-gray-900 text-white min-h-screen">
         <Providers>
           <Navbar />
-          <main className="pt-20">
+          {/* Pages own their <main> landmark; the layout only offsets the
+              fixed navbar. Nesting <main> here produced invalid HTML. */}
+          <div className="pt-20">
             {children}
-          </main>
+          </div>
         </Providers>
       </body>
     </html>

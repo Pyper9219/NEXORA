@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import type { Session } from "next-auth"
 import { useSession, signOut } from "next-auth/react"
 import { Menu, X, LogOut, User, Settings, ChevronDown } from "lucide-react"
 
@@ -19,8 +20,13 @@ const navItems: NavItem[] = [
   { label: "Contact", href: "/contact", cta: false },
 ]
 
-export function Navbar() {
-  const { data: session, status } = useSession()
+export function Navbar(props: { session?: Session | null } = {}) {
+  const { data: liveSession, status: liveStatus } = useSession()
+  // Callers that already resolved the session on the server (the dashboard)
+  // pass it in so the navbar renders signed-in on the first paint instead of
+  // flashing "Sign In" while /api/auth/session is fetched.
+  const session = liveSession ?? props.session ?? null
+  const status = props.session ? "authenticated" : liveStatus
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 

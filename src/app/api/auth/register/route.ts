@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -99,6 +100,16 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error("Registration error:", error)
+
+    // Two simultaneous signups for the same address can pass the existence
+    // check above; the unique constraint is the real guard.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "User with this email already exists" },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json(
       { error: "Failed to create account. Please try again." },
       { status: 500 }

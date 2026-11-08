@@ -1,14 +1,11 @@
-import { Navbar } from '@/components/ui/navbar'
 
 export default function LegalPage() {
   return (
     <main className="page-main">
-      <Navbar />
-
       <section className="section-py bg-gray-950">
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-            <div className="space-responsive-y">
+            <div id="terms" className="space-responsive-y scroll-mt-28">
               <h2 className="section-heading text-2xl sm:text-3xl lg:text-4xl text-violet-400">Terms of Service</h2>
               <p className="hero-subheading text-white/60">Last updated: January 2026</p>
               <ul className="space-y-4 text-white/60">
@@ -33,11 +30,11 @@ export default function LegalPage() {
                   <p className="ml-4 text-white/40 text-sm">Nexora may terminate your account at any time for violation of these terms.</p>
                 </li>
               </ul>
-              <a href="/privacy" className="btn-ghost mt-6 inline-block">
+              <a href="#privacy" className="btn-ghost mt-6 inline-block">
                 Read Privacy Policy
               </a>
             </div>
-            <div className="space-responsive-y">
+            <div id="privacy" className="space-responsive-y scroll-mt-28">
               <h2 className="section-heading text-2xl sm:text-3xl lg:text-4xl text-violet-400">Privacy Policy</h2>
               <p className="hero-subheading text-white/60">Last updated: January 2026</p>
               <ul className="space-y-4 text-white/60">

@@ -83,10 +83,19 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await prisma.newsletterSubscriber.update({
+    // updateMany instead of update: update() throws P2025 for an unknown email,
+    // which surfaced as a 500 "Failed to unsubscribe".
+    const result = await prisma.newsletterSubscriber.updateMany({
       where: { email },
       data: { isActive: false }
     })
+
+    if (result.count === 0) {
+      return NextResponse.json(
+        { error: "Email not found" },
+        { status: 404 }
+      )
+    }
 
     return NextResponse.json(
       { success: true, message: "Successfully unsubscribed" },

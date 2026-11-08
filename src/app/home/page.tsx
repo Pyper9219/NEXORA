@@ -4,14 +4,11 @@ import Link from 'next/link'
 import { FaqAccordion } from '@/components/faq-accordion'
 import { IndustryCards } from '@/components/industry-cards'
 import { PricingPreview } from '@/components/pricing-preview'
-import { Navbar } from '@/components/ui/navbar'
 import { NewsletterForm } from '@/components/newsletter'
 
 export default function HomePage() {
   return (
     <main className="page-container">
-      <Navbar />
-
       <section className="flex-1 bg-gradient-to-b from-gray-950 via-indigo-950 to-violet-950 section-py">
         <div className="section-container">
           <div className="text-center max-w-3xl mx-auto mb-12 space-responsive-y">

@@ -80,7 +80,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
+    <main className="min-h-[calc(100vh-5rem)] bg-gray-950 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="text-center mb-8 space-responsive-y">
@@ -199,9 +199,9 @@ export default function SignUpPage() {
               />
               <label htmlFor="terms" className="text-white/60 text-sm">
                 I agree to the{" "}
-                <Link href="/legal/terms" className="text-violet-400 hover:text-violet-300">Terms of Service</Link>
+                <Link href="/legal#terms" className="text-violet-400 hover:text-violet-300">Terms of Service</Link>
                 {" "}and{" "}
-                <Link href="/legal/privacy" className="text-violet-400 hover:text-violet-300">Privacy Policy</Link>
+                <Link href="/legal#privacy" className="text-violet-400 hover:text-violet-300">Privacy Policy</Link>
               </label>
             </div>
 
@@ -262,6 +262,6 @@ export default function SignUpPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   )
 }

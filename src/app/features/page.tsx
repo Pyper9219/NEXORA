@@ -1,11 +1,8 @@
 import { FaqAccordion } from '@/components/faq-accordion'
-import { Navbar } from '@/components/ui/navbar'
 
 export default function FeaturesPage() {
   return (
     <main className="page-main">
-      <Navbar />
-
       <section className="section-py bg-gray-950">
         <div className="section-container">
           <div className="text-center mb-12 lg:mb-16 space-responsive-y">

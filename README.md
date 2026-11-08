@@ -1,16 +1,16 @@
 # NEXORA - AI-Powered Business Growth Platform
 
-A modern, full-stack web application built with Next.js 15, featuring authentication, subscription billing, dashboard analytics, and automation tools.
+A modern, full-stack web application built with Next.js 16, featuring authentication, subscription billing, dashboard analytics, and automation tools.
 
 ## 🚀 Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Authentication**: NextAuth v4 (Credentials + OAuth: Google, GitHub)
 - **Database**: PostgreSQL with Prisma ORM
 - **Payments**: Stripe (Subscriptions, Checkout, Billing Portal)
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
-- **Runtime**: Node.js 18+
+- **Runtime**: Node.js 20.9+
 
 ## ✨ Features
 
@@ -75,7 +75,7 @@ NEXORA/
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20.9+
 - PostgreSQL database
 - Stripe account
 
@@ -145,7 +145,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
-npm run lint         # Run ESLint
+npm run typecheck    # Type-check with tsc (no ESLint config yet)
 npx prisma studio    # Open Prisma Studio
 npx prisma db push   # Push schema changes
 npx prisma migrate dev # Run migrations

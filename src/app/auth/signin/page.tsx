@@ -1,9 +1,22 @@
 import { Suspense } from "react"
 import SignInForm from "./SignInForm"
 
+/**
+ * Rendering must happen per request: the OAuth buttons depend on which provider
+ * credentials exist at runtime. Prerendering this page at build time froze the
+ * list to whatever was set during `next build` (usually nothing).
+ */
+export const dynamic = "force-dynamic"
+
 export default function SignInPage() {
+  // Only advertise OAuth buttons whose credentials are actually configured.
+  const oauthProviders = [
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? "google" : null,
+    process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? "github" : null,
+  ].filter((provider): provider is string => provider !== null)
+
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
+    <main className="min-h-[calc(100vh-5rem)] bg-gray-950 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="text-center mb-8">
@@ -21,7 +34,7 @@ export default function SignInPage() {
 
         {/* Sign In Form with Suspense boundary for useSearchParams */}
         <Suspense fallback={<div className="bg-gray-900/50 rounded-2xl p-8 border border-white/10 animate-pulse"><div className="h-8 bg-gray-800 rounded w-3/4 mx-auto mb-4"></div><div className="h-4 bg-gray-800 rounded w-1/2 mx-auto mb-6"></div><div className="space-y-4"><div className="h-10 bg-gray-800 rounded"></div><div className="h-10 bg-gray-800 rounded"></div><div className="h-10 bg-gray-800 rounded"></div></div></div>}>
-          <SignInForm />
+          <SignInForm oauthProviders={oauthProviders} />
         </Suspense>
 
         {/* Sign Up Link */}
@@ -31,14 +44,7 @@ export default function SignInPage() {
             Sign up
           </a>
         </p>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-white/10">
-          <p className="text-white/50 text-sm text-center">
-            <strong>Demo:</strong> demo@nexora.com / demo123
-          </p>
-        </div>
       </div>
-    </div>
+    </main>
   )
 }

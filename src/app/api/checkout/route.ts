@@ -13,7 +13,6 @@ const planPriceMap: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const stripe = getStripe()
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -24,16 +23,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { plan, interval = "month" } = body
+    const { plan } = body
 
-    if (!plan || !planPriceMap[plan]) {
+    // Distinguish "no such plan" from "plan exists but its Stripe price is not
+    // configured"; the old truthiness check reported the latter as the former.
+    const priceId: string | undefined = plan ? planPriceMap[plan] : undefined
+
+    if (typeof priceId !== "string") {
       return NextResponse.json(
         { error: "Invalid plan" },
         { status: 400 }
       )
     }
-
-    const priceId = planPriceMap[plan]
 
     if (!priceId) {
       return NextResponse.json(
@@ -41,6 +42,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const stripe = getStripe()
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
     // Get or create Stripe customer
     let userSub = await prisma.subscription.findUnique({
@@ -87,8 +91,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      success_url: `${appUrl}/dashboard?success=true`,
+      cancel_url: `${appUrl}/pricing?canceled=true`,
       metadata: {
         userId: session.user.id,
         plan,

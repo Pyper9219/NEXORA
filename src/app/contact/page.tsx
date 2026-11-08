@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { FaqAccordion } from '@/components/faq-accordion'
-import { Navbar } from '@/components/ui/navbar'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -52,8 +51,6 @@ export default function ContactPage() {
 
   return (
     <main className="page-main">
-      <Navbar />
-
       <section className="section-py bg-gray-950">
         <div className="section-container">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">

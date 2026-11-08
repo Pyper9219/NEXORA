@@ -1,10 +1,7 @@
-import { Navbar } from '@/components/ui/navbar'
 
 export default function AboutPage() {
   return (
     <main className="page-main">
-      <Navbar />
-
       <section className="section-py bg-gray-950">
         <div className="section-container">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">

@@ -1,10 +1,7 @@
-import { Navbar } from '@/components/ui/navbar'
 
 export default function ResourcesPage() {
   return (
     <main className="page-main">
-      <Navbar />
-
       <section className="section-py bg-gray-950">
         <div className="section-container">
           <div className="text-center mb-12 lg:mb-16 space-responsive-y">
